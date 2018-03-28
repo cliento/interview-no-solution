@@ -1,0 +1,13 @@
+{
+  "customer": {
+    "name": "Jenny",
+    "email": "jenny@hotmail.com"
+  },
+  "items": [
+    {
+      "description": "Klippning",
+      "price": "0.00",
+      "discount": "0.00"
+    }
+  ]
+}
