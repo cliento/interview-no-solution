@@ -1,9 +1,9 @@
 package com.cliento.clientointerview.jdbc;
 
+import java.util.List;
+
 import com.cliento.clientointerview.restapi.Sale;
 import com.cliento.clientointerview.restapi.SaleItem;
-
-import java.util.List;
 
 public interface CashRegisterStorage {
 
