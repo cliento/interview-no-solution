@@ -1,39 +1,28 @@
 package com.cliento.clientointerview;
 
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.io.IOException;
-
+import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
+import java.io.IOException;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.*;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest (webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes = ClientoInterviewApplication.class)
+@SpringBootTest (webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class ClientoInterviewApplicationTests {
-	
-	@LocalServerPort
-	int port;
-	
-	@Before
-	public void setUp() {
-		RestAssured.port = port;
-	}
 
     @Test
     public void test_VerifyHelloWorld() {
 
-        given().port(port).get("/hello-world").then().statusCode(200).assertThat().body(is("Hello World!"));
+        given().get("/hello-world").then().statusCode(200).assertThat().body(is("Hello World!"));
 
     }
 
