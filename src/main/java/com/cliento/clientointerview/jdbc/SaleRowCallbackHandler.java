@@ -13,6 +13,10 @@ import com.cliento.clientointerview.restapi.Customer;
 import com.cliento.clientointerview.restapi.Sale;
 import com.cliento.clientointerview.restapi.SaleItem;
 
+/**
+ * RowCallbackHandler for mapping sale rows joined with customer rows and
+ * sale item rows to a List of Sale value objects
+ */
 public class SaleRowCallbackHandler implements RowCallbackHandler {
 	List<Sale> sales = new ArrayList<Sale>();
 	Map<Long, Customer> customerMap = new HashMap<Long, Customer>();
