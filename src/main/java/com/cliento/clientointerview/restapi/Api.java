@@ -1,7 +1,9 @@
 package com.cliento.clientointerview.restapi;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cliento.clientointerview.cardreader.CardReader;
 import com.cliento.clientointerview.cardreader.CardTransaction;
+import com.cliento.clientointerview.cardreader.SaleService;
 import com.cliento.clientointerview.jdbc.CashRegisterStorage;
 
 @RestController
@@ -25,11 +28,13 @@ public class Api {
 	
     private final CardReader cardReader;
     private final CashRegisterStorage cashRegisterStorage;
+    private final SaleService saleService;
 
     @Autowired
-    public Api(CardReader cardReader, CashRegisterStorage cashRegisterStorage) {
+    public Api(CardReader cardReader, CashRegisterStorage cashRegisterStorage, SaleService saleService) {
         this.cardReader = cardReader;
         this.cashRegisterStorage = cashRegisterStorage;
+        this.saleService = saleService;
     }
 
     @GetMapping(path="/hello-world")
@@ -43,21 +48,26 @@ public class Api {
     	return sales != null ? ResponseEntity.ok(Sales.create(sales)) : ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No sales found");
     }
     
-    
-    @PostMapping(path="/sale")
+    @PostMapping(path="/sale", produces="application/json")
     public ResponseEntity<?> sale(@RequestBody Sale sale) {
     	final CountDownLatch cardTransactionLatch = new CountDownLatch(1);
     	
-    	CardTransaction cardTransaction = new CardTransaction(sale, cashRegisterStorage, cardTransactionLatch);
+    	CardTransaction cardTransaction = new CardTransaction(cardTransactionLatch);
 		cardReader.startCardTransaction(sale.getTotalAmount(), cardTransaction);
 		
 		try {
-			cardTransactionLatch.await();
+			if(!cardTransactionLatch.await(10L, TimeUnit.SECONDS)) {
+				logger.info("com.cliento.clintointerview.restapi.Api.sale: CardTransaction timeout reached");
+				return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("{\"message\":\"Transaction timeout reached\"}");
+			}
 		} catch (InterruptedException e) {
 			logger.error(e.getMessage(), e);
+			cardTransaction.setFailureCode(e.getMessage());
 		}
 		
-    	return cardTransaction.isSuccess() ? ResponseEntity.ok(cardTransaction.getSaleResponse()) :
+		Optional<SaleResponse> optional = cardTransaction.isSuccess() ? saleService.doSale(sale, cardTransaction) : Optional.empty();
+		
+    	return optional.isPresent() ? ResponseEntity.ok(optional.get()) :
     		ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"message\":\"" + cardTransaction.getFailureCode() + "\"}");
     }
     

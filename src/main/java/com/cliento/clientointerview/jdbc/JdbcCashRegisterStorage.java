@@ -116,9 +116,9 @@ public class JdbcCashRegisterStorage implements CashRegisterStorage {
 					+ "FROM sale "
 					+ "JOIN customer ON sale.customer_id = customer.id "
 					+ "LEFT JOIN sale_item ON sale_item.sale_id = sale.id";
-			SaleRowCallbackHandler srCallbackHandler = new SaleRowCallbackHandler();
-			jdbcTemplate.query(selectQuery, srCallbackHandler);
-			sales = srCallbackHandler.getSaleList();
+			SaleRowCallbackHandler saleRowCallbackHandler = new SaleRowCallbackHandler();
+			jdbcTemplate.query(selectQuery, saleRowCallbackHandler);
+			sales = saleRowCallbackHandler.getSaleList();
 			
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
